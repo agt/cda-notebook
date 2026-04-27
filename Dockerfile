@@ -43,19 +43,21 @@ RUN apt-get update -y && \
     chmod g-s /usr/bin/screen && \
     chmod 1777 /var/run/screen
 
-USER jovyan
-
-# Install uv for faster package installations
-RUN pip3 install --no-cache-dir --upgrade uv
-
-RUN uv pip install --system jupyter-ai==3.0.0
-
-USER root
-
 ARG OPENCODE_VER=v1.14.28
 ARG OPENCODE_URL=https://github.com/anomalyco/opencode/releases/download/$OPENCODE_VER/opencode-linux-x64.tar.gz
 
 RUN cd /usr/local/bin && ( curl -L -s $OPENCODE_URL  | tar xvzf - )
 
 USER jovyan
+
+# Install uv for faster package installations
+RUN pip3 install --no-cache-dir --upgrade uv
+
+RUN uv pip install --system jupyter-ai==3.0.0 mistral-vibe jupyter-ai-claude-code
+
+RUN mamba install nodejs && \
+        mamba run npm install -g @agentclientprotocol/claude-agent-acp && \
+        mamba run npm install -g @zed-industries/codex-acp 
+
+
 
