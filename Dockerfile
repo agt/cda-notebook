@@ -1,52 +1,47 @@
-# 1) choose base container
-# generally use the most recent tag
-
-# base notebook, contains Jupyter and relevant tools
-# See https://github.com/ucsd-ets/datahub-docker-stack/wiki/Stable-Tag 
-# for a list of the most current containers we maintain
-ARG BASE_CONTAINER=ghcr.io/ucsd-ets/datascience-notebook:2025.1-stable
-
+ARG BASE_CONTAINER=quay.io/jupyter/base-notebook:lab-4.5.6
 FROM $BASE_CONTAINER
 
 LABEL maintainer="UC San Diego ITS/ATS <datahub@ucsd.edu>"
 
-# 3) install packages using notebook user
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NOWARNINGS="yes"
+RUN apt-get update -y && \
+    apt-get -qq install -y --no-install-recommends \
+    git \
+    libgdal-dev \
+    libproj-dev \
+    libgeos-dev \
+    libudunits2-dev \
+    libgit2-dev \
+    pkg-config \
+    curl \
+    rsync \
+    unzip \
+    less \
+    nano \
+    vim \
+    cmake \
+    tmux \
+    screen \
+    gnupg \
+    htop \
+    wget \
+    strace \
+    openssh-client \
+    openssh-server \
+    netcat-openbsd \
+    p7zip \
+    apt-utils \
+    jq \
+    build-essential \
+    p7zip-full && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    chmod g-s /usr/bin/screen && \
+    chmod 1777 /var/run/screen
+
 USER jovyan
 
-ENV PATH="/opt/conda/bin:$PATH"
+# Install uv for faster package installations
+RUN pip3 install --no-cache-dir --upgrade uv
 
-# Create the cse234 conda environment with updated Python
-# and register new Jupyter kernel
-ARG ENVNAME=cse234
-ARG ENVDIR="${CONDA_DIR}/envs/${ENVNAME}"
-ARG PYVER=3.12
-RUN mamba create --yes -p "${ENVDIR}" python=${PYVER} pip ipykernel && \
-      mamba run -p "${ENVDIR}" python -m ipykernel install --prefix /opt/conda --name="${ENVNAME}" && \
-      mamba run -p "${ENVDIR}" pip install uv
-
-# Bash profile hook to default terminal to cse234 environment
-COPY conda_profile.sh /etc/profile.d/conda_profile.sh
-
-ARG RFAI_REQ=${ENVDIR}/lib/python${PYVER}/site-packages/setup/evals/requirements-local.txt
-ARG VLLM_COMMIT=72506c98349d6bcd32b4e33eec7b5513453c1502 # 0.13 is first to include x86 cpu-only
-RUN mamba run -p "${ENVDIR}"  uv pip install vllm \
-            --extra-index-url https://wheels.vllm.ai/${VLLM_COMMIT}/cpu \
-            --index-strategy first-index --torch-backend cpu && \
-      mamba run -p "${ENVDIR}" uv pip install rapidfireai loguru && \
-      sed -i -e 's/^faiss-gpu-cu12/faiss-cpu/' -e 's/torch<=.*/torch/' $RFAI_REQ && \
-      mamba run -p "${ENVDIR}" rapidfireai init --evals && \
-      mamba run -p "${ENVDIR}" uv cache clean
-
-# rapidfireai server expects "setup" dir to be writeable for PID files
-RUN chmod 777 /opt/conda/envs/cse234/lib/python${PYVER}/site-packages/setup
-    
-#RUN apt-get -y install htop
-
-# Override command to disable running jupyter notebook at launch
-# CMD ["/bin/bash"]
-
-# FIXME - consolidate with above - placed here in hopes of limiting changes to previous layers
-USER root
-RUN mkdir -p /etc/datahub-profile.d
-COPY conda_profile.sh /etc/datahub-profile.d/conda_profile.sh
-USER jovyan
+RUN uv pip install jupyter-ai==3.0.0
