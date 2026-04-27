@@ -52,7 +52,8 @@ RUN uv pip install --system jupyter-ai==3.0.0
 
 USER root
 
-ARG OPENCODE_URL=https://github.com/anomalyco/opencode/releases/download/v1.14.28/opencode-linux-x64.tar.gz
+ARG OPENCODE_VER=v1.14.28
+ARG OPENCODE_URL=https://github.com/anomalyco/opencode/releases/download/$OPENCODE_VER/opencode-linux-x64.tar.gz
 
 RUN cd /usr/local/bin && ( curl -L -s $OPENCODE_URL  | tar xvzf - )
 
