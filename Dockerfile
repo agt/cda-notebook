@@ -48,4 +48,4 @@ USER jovyan
 # Install uv for faster package installations
 RUN pip3 install --no-cache-dir --upgrade uv
 
-RUN uv pip install jupyter-ai==3.0.0
+RUN uv pip install --system jupyter-ai==3.0.0
