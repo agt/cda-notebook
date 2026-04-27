@@ -1,3 +1,5 @@
+# Base image for CDA
+
 ARG BASE_CONTAINER=quay.io/jupyter/base-notebook:lab-4.5.6
 FROM $BASE_CONTAINER
 
