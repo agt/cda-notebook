@@ -5,6 +5,8 @@ FROM $BASE_CONTAINER
 
 LABEL maintainer="UC San Diego ITS/ATS <datahub@ucsd.edu>"
 
+USER root
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NOWARNINGS="yes"
 RUN apt-get update -y && \
