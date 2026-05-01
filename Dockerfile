@@ -59,5 +59,31 @@ RUN mamba install nodejs && \
         mamba run npm install -g @agentclientprotocol/claude-agent-acp && \
         mamba run npm install -g @zed-industries/codex-acp 
 
-
+ARG TORCH_VERSION=2.11.0
+RUN uv pip install --system \
+        --extra-index-url https://pypi.nvidia.com \
+        --extra-index-url https://download.pytorch.org/whl/cu128 \
+        nvidia-cuda-nvcc-cu12 \
+        nvidia-nccl-cu12 \
+        cuda-python \
+        opencv-contrib-python-headless \
+        opencv-python \
+        PyQt5 \
+        pycocotools \
+        pillow \
+        scapy \
+        nvidia-cudnn-cu12 \
+        torch==$TORCH_VERSION \
+        torchvision \
+        torchaudio \
+        tensorrt \
+        transformers \
+        datasets \
+        accelerate \
+        huggingface-hub \
+        timm \
+    && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER && \
+    uv cache clean
 
